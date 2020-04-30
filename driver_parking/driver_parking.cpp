@@ -80,7 +80,11 @@ double targetangle = 0;
 bool brakeflag = false;
 double lastd = 100;
 double d = 0;
-
+double yerrsum = 0;
+double ydiff = 0;
+double derrsum = 0;
+double ddiff = 0;
+double td = 0;
 static void userDriverGetParam(float lotX, float lotY, float lotAngle, bool bFrontIn, float carX, float carY, float caryaw, float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm){
 	/* write your own code here */
 	
@@ -143,18 +147,27 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 		flag = 6;
 	}else
 	{
-		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 0.5 ) {    //用车速判断是否完成泊车
-			*cmdSteer = constrain(-1,1,-20*(_lotAngle -_caryaw)/3.14) ;
+		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 2.5 ) {    //用车速判断是否完成泊车
+			yerrsum += _lotAngle - _caryaw;
+
+			*cmdSteer = constrain(-1, 1, -20 * (_lotAngle - _caryaw) / 3.14);// -0.2 * yerrsum);
 			d = sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY));
 
-			if(abs( _speed) < 0.1){
+			if(abs( _speed) < 0.2){
 			    *bFinished = true;
 				flagt = 1;}
 			else
 			{*cmdBrake = 0.1;*cmdGear = -1;*cmdAcc = 0;}
+			if (abs(_speed) < 1.0)
+			{
+				*cmdBrake = 0;
+				*cmdGear = -1;
+				*cmdAcc = 0.1;
+			}
 			if (d > lastd)
 			{
 				*cmdBrake = 1;
+				*cmdAcc = 0;
 			}
 			lastd = d;
 			flag = 1; 
@@ -168,8 +181,11 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			*cmdBrake = 0;
 		}*/
 		else if(flagt ==2 ) { //接近停车位时，倒车入库
-			
-			*cmdSteer = constrain(-1,1,-20*(_lotAngle -_caryaw)/3.14-sgn*dist*1.2) ;
+			if (dist<0.5)
+				derrsum += sgn * dist;
+			ddiff = sgn * dist - td;
+			td = sgn * dist;
+			*cmdSteer = constrain(-1, 1, -20 * (_lotAngle - _caryaw) / 3.14 - sgn * dist * 1.2);// -derrsum * 0.15 - 10 * ddiff);
 			//*cmdGear = -1;
 			//*cmdAcc = 1;
 			//*cmdBrake = 0;
@@ -325,7 +341,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	
 	if(*bFinished)
 	{
-		if ((sqrt((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY)) < 0.5 )&&!goahead) { //十分接近停车位时，控制车的朝向与车位一致，直线出库
+		/*if ((sqrt((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY)) < 0.5 )&&!goahead) { //十分接近停车位时，控制车的朝向与车位一致，直线出库
 			*cmdSteer =constrain(-1,1,20*(_lotAngle -_caryaw)/3.14);//要改
 			*cmdBrake = 0;
 			*cmdGear = 1;
@@ -334,13 +350,17 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			flag = 7;
 		}
 		else
-		{
+		{*/
+		if (sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY)) < 1)
+			*cmdAcc = 1.0;
+		else
 			*cmdAcc = 0.5;
-			*cmdBrake = 0;
-			*cmdSteer = constrain(-1, 1, 0.67 * _yaw);
-			*cmdGear = 1;
-			flag = 9;
-		}
+		*cmdBrake = 0;
+	
+		*cmdSteer = constrain(-1, 1, (0.0*_yaw - 8 * atan2(_midline[30][0], _midline[30][1])) / 3.14);
+		*cmdGear = 1;
+		flag = 9;
+		//}
 		/*else if (((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 50 && dist <1 )&&!goahead&&(_caryaw-_lotAngle<PI/2.0)){//较接近停车位时，给一个大的转向		
 		    *cmdSteer = 1;
 			*cmdAcc = 1;
@@ -366,7 +386,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	if (sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY)) < 100) printf("  d:%f\tfinish:%d\t", sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY)),*bFinished);
 
 	printf("Steer:%.2f\tflag:%d\tspeed:%.2f\tdist:%.2f\tlotAngle:%.2f\tcaryaw:%.2f\tbrake:%f\n",*cmdSteer,flag,_speed,sgn*dist,_lotAngle,_caryaw,*cmdBrake);
-	printf("acc:%f\tflag:%d\tflagt:%d\taccreverse:%d\ts:%f\tdist2:%f\n",*cmdAcc,flag,flagt,accreverse,abs(-1.2),dist2);
+	printf("acc:%f\tflag:%d\tflagt:%d\taccreverse:%d\ts:%f\tdist2:%f\tsteer:%f\n",*cmdAcc,flag,flagt,accreverse,abs(-1.2),dist2,*cmdSteer);
 }
 double constrain(double lowerBoundary, double upperBoundary, double input)
 {
