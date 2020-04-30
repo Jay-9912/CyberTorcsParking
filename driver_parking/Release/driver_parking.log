@@ -1,0 +1,23 @@
+﻿  driver_parking.cpp
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(147,25): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(154,20): warning C4305: “=”: 从“double”到“float”截断
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(172,25): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(188,44): warning C4305: “=”: 从“double”到“float”截断
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(189,76): warning C4305: “=”: 从“double”到“float”截断
+F:\vs\VC\Tools\MSVC\14.24.28314\include\xtgmath.h(24,78): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(235,20): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(242,25): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(249,20): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(259,21): warning C4305: “=”: 从“double”到“float”截断
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(263,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(283,20): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(290,25): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(297,20): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(307,21): warning C4305: “=”: 从“double”到“float”截断
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(311,27): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(319,68): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(329,24): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\driver_parking\driver_parking.cpp(340,25): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+F:\vs\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1274,5): warning MSB8012: TargetPath(G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\Release\driver_parking.dll) does not match the Linker's OutputFile property value (G:\learning_material\控制导论\【实验平台】CyberTORCS_2020Spring_V1.1\CyberTORCS_2020Spring_V1.1\cyberparking\driver_parking.dll). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+    正在创建库 G:\learning_material\控制导论\【实验平台】CyberTORCS_2020Spring_V1.1\CyberTORCS_2020Spring_V1.1\cyberparking\driver_parking.lib 和对象 G:\learning_material\控制导论\【实验平台】CyberTORCS_2020Spring_V1.1\CyberTORCS_2020Spring_V1.1\cyberparking\driver_parking.exp
+  driver_parking.vcxproj -> G:\learning_material\控制导论\【模板代码】driver_parking\driver_parking\Release\driver_parking.dll
