@@ -86,6 +86,7 @@ double derrsum = 0;
 double ddiff = 0;
 double td = 0;
 double a = 0;
+double AngleErr = 0;
 static double getAngleErr(double x, double y)
 {
 	double e1, e2, e3;
@@ -98,6 +99,9 @@ static double getAngleErr(double x, double y)
 		return e2;
 	else return e3;
 }
+//cls_VISUAL cls_visual;																//
+//int nKey = 0;																		//
+//char cKeyName[512];
 static void userDriverGetParam(float lotX, float lotY, float lotAngle, bool bFrontIn, float carX, float carY, float caryaw, float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm) {
 	/* write your own code here */
 
@@ -168,7 +172,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 	
 		if ((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 2.5) {    //用车速判断是否完成泊车
 			yerrsum += _lotAngle - _caryaw;
-			double AngleErr = getAngleErr(_lotAngle, _caryaw);
+			AngleErr = getAngleErr(_lotAngle, _caryaw);
 			*cmdSteer = constrain(-1, 1, -20 * AngleErr / 3.14);// -0.2 * yerrsum);
 			d = sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY));
 
@@ -178,9 +182,9 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 			}
 			else
 			{
-				*cmdBrake = 0.1;*cmdGear = -1;*cmdAcc = 0;
+				*cmdBrake = 0.5;*cmdGear = -1;*cmdAcc = 0;
 			}
-			if (abs(_speed) < 1.0)
+			if (abs(_speed) < 1.0)	
 			{
 				*cmdBrake = 0;
 				*cmdGear = -1;
@@ -208,14 +212,14 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 				derrsum += sgn * dist;
 			ddiff = sgn * dist - td;
 			td = sgn * dist;
-			double AngleErr = getAngleErr(_lotAngle, _caryaw);
+			AngleErr = getAngleErr(_lotAngle, _caryaw);
 			*cmdSteer = constrain(-1, 1, -20 * AngleErr / 3.14 - sgn * dist * 1.2);// -derrsum * 0.15 - 10 * ddiff);
 			
 			//*cmdGear = -1;
 			//*cmdAcc = 1;
 			//*cmdBrake = 0;
 
-			if (_speed > -10 && accreverse)
+			if (_speed > -20 && accreverse)
 			{
 				*cmdGear = -1;
 				*cmdAcc = 1;
@@ -226,68 +230,38 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 
 				accreverse = false;
-				if (abs(_speed) > 10) { *cmdBrake = 0.1; *cmdGear = -1; *cmdAcc = 0; }
-				else if (abs(_speed) > 9) { *cmdBrake = 0; *cmdGear = -1; *cmdAcc = 0.1; }
+				if (abs(_speed) > 20) { *cmdBrake = 0.1; *cmdGear = -1; *cmdAcc = 0; }
+				else if (abs(_speed) < 20) { *cmdBrake = 0; *cmdGear = -1; *cmdAcc = 0.1; }
 				//else if ((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 0.5) { *bFinished = true; flagt = 1; }
 			}
 			flag = 2;
 		}
-		else if (((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 1500 && (dist2 < 24 || flag == 3)) && (flagt != 2)) 
+		else if (((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 1500 && (dist2 < 13 || flag == 3)) && (flagt != 2)) // 1500 24//14
 		{//较接近停车位时，给一个大的转向	//1500 26
 
 #pragma region drift
 
-			/*if (dist > 20)
-			{
-				*cmdSteer = 0.2 * _yaw;
-				*cmdAcc = 0;
-				*cmdGear = 2;
-				*cmdBrake = 0.3;
-			}*/
-
-			* cmdSteer = -1.0;
+			AngleErr = getAngleErr(_lotAngle, _caryaw);
+			* cmdSteer = constrain(-1, 1, 20 * (AngleErr-PI/18.0));
 			*cmdAcc = 0;
 			*cmdGear = 1;
-
-			
-			if (dist2 > 15)
+			*cmdBrake = 0.25;//0.2
+			/*
+			if (dist2 > 5)//15
 			{
-				a = -log10((dist2 - 14) / 10);
+				a = -log10((dist2 - 4) / 10);//14
 				printf("a:%.2f\t", a);
 				*cmdBrake = constrain(0, 1, a / 7); //7-8
 				brakeflag = false;
-			}
-			
+			}*/
 
-			/*
-			if (dist2 > 15)
+
+
+			if ((_caryaw - _lotAngle < PI / 9.0 * 1.5 && _caryaw>_lotAngle) || (_caryaw + 2 * PI - _lotAngle < PI / 9.0 * 1.5 && _caryaw < _lotAngle))
 			{
-				if (brakeflag) 
-				{
-					a = -log10((dist2 - 14) / 10);
-					printf("a:%.2f\t", a);
-					*cmdBrake = constrain(0, 1, a / 6);
-					brakeflag = false;
-				}
-				else 
-				{
-					*cmdBrake = 0;
-					printf("a:%.2f\t", -1);
-					brakeflag = true;
-				}
-			}
-			*/
-
-			if ((_caryaw - _lotAngle < PI / 9.0 * 3.0 && _caryaw>_lotAngle) || (_caryaw + 2 * PI - _lotAngle < PI / 9.0 * 3.0 && _caryaw < _lotAngle))
 				*cmdBrake = 1;
-
-			/*
-			if ((_caryaw - _lotAngle < PI / 9.0 * 3.0 && _caryaw>_lotAngle) || (_caryaw + 2 * PI - _lotAngle < PI / 9.0 * 3.0 && _caryaw < _lotAngle))
-				brakeflag = true;
-			if (brakeflag)
-				*cmdBrake = 1;
-			*/
 			
+			}
 
 #pragma endregion
 
@@ -298,12 +272,11 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 			flag = 3;
 		}
-		else if ((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 6050 && dist < 56)
+		else if ((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 25000 && dist < 150)//6050 56
 		{ //提前将车控制在道路左侧
 			*cmdSteer = (_yaw - atan2(_midline[10][0] - 1.0 * _width / 3.0, _midline[10][1])) / 3.14;
-			/*if( _speed > 100 ){*cmdBrake = 0.2;*cmdGear = 2;*cmdAcc = 0;}
-			else{*cmdBrake = 0;*cmdGear = 2;*cmdAcc = 0.1;}*/
-			expectedSpeed = 100;
+
+			expectedSpeed = 80;
 #pragma region sPID1
 
 			curSpeedErr = expectedSpeed - _speed;
@@ -353,7 +326,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 		else
 		{			                                                                         //其它路段按巡线方式行驶
-			expectedSpeed = 100;
+			expectedSpeed = 80;
 #pragma region sPID2
 			curSpeedErr = expectedSpeed - _speed;
 			serr = curSpeedErr - tmps;// add a defferential term
@@ -451,8 +424,23 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 	}
 
 	//if (sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY)) < 100) printf("  d:%f\tfinish:%d\t", sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY)), *bFinished);
+/*
+#pragma region Wu
+	cv::Mat im1Src = cv::Mat::zeros(cv::Size(400, 400), CV_8UC1);
 
+	for (int i = 0; i < 200; i++)
+		cv::circle(im1Src, cv::Point(200 + _midline[i][0] * 2, 400 - _midline[i][1] * 2), 2, cv::Scalar(100, 100, 100));
+	sprintf_s(cKeyName, "Key: %c is pushed", nKey);
+	cv::putText(im1Src, cKeyName, cv::Point(20, 50), cv::FONT_HERSHEY_TRIPLEX, 1, cv::Scalar(255, 255, 255));
+	cv::imshow("Path", im1Src);
+	cls_visual.Fig1Y(5, -1, 1, 10, "AngleErr", AngleErr, "xerr", _carX-_lotX, "yerr", _carY-_lotY);
+	cls_visual.Fig2Y(3, -1, 1, -1, 1, 10, "dist", dist, "dist2", dist2, "d", d);
 
+	int tempKey = cv::waitKey(1);
+	if (tempKey != -1)
+		nKey = tempKey;
+#pragma endregion
+*/
 	printf("acc:%f\tSteer:%.2f\tbrake:%f\t", *cmdAcc, *cmdSteer, *cmdBrake);
 
 	//printf("speed:%.2f\tcaryaw:%.2f\tyaw:%.2f\tdist:%.2f\t", _speed, _caryaw, _yaw, sgn * dist);
@@ -460,7 +448,8 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 	printf("flag:%d\t", flag);
 
 	printf("\n");
-	printf("lotX %.6f  lotY %.6f   lotAngle: % .2f\n", _lotX, _lotY, _lotAngle);
+	printf("AngleErr:%.2f\tXerr:%.2f\tYerr:%.2f\td:%.2f\tfinish:%d\tspeed:\%.2f\n", AngleErr, _carX-_lotX, _carY-_lotY, d,*bFinished,_speed);
+	//printf("lotX %.6f  lotY %.6f   lotAngle: % .2f\n", _lotX, _lotY, _lotAngle);
 
 	//printf("Steer:%.2f\tflag:%d\tspeed:%.2f\tdist:%.2f\tlotAngle:%.2f\tcaryaw:%.2f\tbrake:%f\n",*cmdSteer,flag,_speed,sgn*dist,_lotAngle,_caryaw,*cmdBrake);
 	//printf("acc:%f\tflag:%d\tflagt:%d\taccreverse:%d\ts:%f\tdist2:%f\tsteer:%f\n",*cmdAcc,flag,flagt,accreverse,abs(-1.2),dist2,*cmdSteer);
