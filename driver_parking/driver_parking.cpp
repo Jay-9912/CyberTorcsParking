@@ -170,7 +170,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 	else
 	{
 	
-		if ((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 2.5) {    //用车速判断是否完成泊车
+		if ((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 4) {    //用车速判断是否完成泊车
 			yerrsum += _lotAngle - _caryaw;
 			AngleErr = getAngleErr(_lotAngle, _caryaw);
 			*cmdSteer = constrain(-1, 1, -20 * AngleErr / 3.14);// -0.2 * yerrsum);
@@ -182,7 +182,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 			}
 			else
 			{
-				*cmdBrake = 0.5;*cmdGear = -1;*cmdAcc = 0;
+				*cmdBrake = 0.8;*cmdGear = -1;*cmdAcc = 0;//0.5
 			}
 			if (abs(_speed) < 1.0)	
 			{
@@ -213,13 +213,13 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 			ddiff = sgn * dist - td;
 			td = sgn * dist;
 			AngleErr = getAngleErr(_lotAngle, _caryaw);
-			*cmdSteer = constrain(-1, 1, -20 * AngleErr / 3.14 - sgn * dist * 1.2);// -derrsum * 0.15 - 10 * ddiff);
+			*cmdSteer = constrain(-1, 1, -20 * AngleErr / 3.14 - sgn * dist * 1.0);// -derrsum * 0.15 - 10 * ddiff);//1.2
 			
 			//*cmdGear = -1;
 			//*cmdAcc = 1;
 			//*cmdBrake = 0;
 
-			if (_speed > -20 && accreverse)
+			if (_speed > -25 && accreverse)
 			{
 				*cmdGear = -1;
 				*cmdAcc = 1;
@@ -230,8 +230,8 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 
 				accreverse = false;
-				if (abs(_speed) > 20) { *cmdBrake = 0.1; *cmdGear = -1; *cmdAcc = 0; }
-				else if (abs(_speed) < 20) { *cmdBrake = 0; *cmdGear = -1; *cmdAcc = 0.1; }
+				if (abs(_speed) > 25) { *cmdBrake = 0.1; *cmdGear = -1; *cmdAcc = 0; }
+				else if (abs(_speed) < 25) { *cmdBrake = 0; *cmdGear = -1; *cmdAcc = 0.1; }
 				//else if ((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 0.5) { *bFinished = true; flagt = 1; }
 			}
 			flag = 2;
