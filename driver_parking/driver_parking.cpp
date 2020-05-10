@@ -105,8 +105,6 @@ static void userDriverGetParam(float lotX, float lotY, float lotAngle, bool bFro
 	_rpm = rpm;
 	_gearbox = gearbox;
 
-	//printf("speed %.3f yaw %.2f distance^2 %.3f\n", _speed, _caryaw, (_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) );
-	//printf("lotX %.6f  lotY %.6f", _lotX, _lotY);
 }
 
 static int flag = 0;
@@ -142,10 +140,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 	if (sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY)) < 70)
 	{
 		if (flagt == 1) {
-			//*cmdAcc = 1;
-			//*cmdBrake = 0;
-			//*cmdGear = 1;
-			//*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/3.14;
+
 			flag = 6;
 		}
 		else
@@ -154,21 +149,21 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 				*cmdSteer = constrain(-1, 1, -20 * Sub(targetangle , targetyaw) / 3.14);
 				d = sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY));
 
-				if (abs(_speed) < 0.2) {
+				if (abs(_speed) < 0.2) {//置位
 					*bFinished = true;
 					flagt = 1;
 				}
-				else
+				else//逐渐减速
 				{
 					*cmdBrake = 0.5;*cmdGear = -1;*cmdAcc = 0;
 				}
-				if (abs(_speed) < 1)
+				if (abs(_speed) < 1)//维持此速度刚好能保证一脚踩停
 				{
 					*cmdBrake = 0;
 					*cmdGear = -1;
 					*cmdAcc = 0.1;
 				}
-				if (d > lastd)
+				if (d > lastd)//踩停
 				{
 					*cmdBrake = 1;
 					*cmdAcc = 0;
@@ -185,30 +180,14 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 				{
 					*cmdSteer = constrain(-1, 1, -40 * Sub(targetangle , targetyaw) / 3.14 + sgn * dist * 2.8);
 				}
-				/*				if (reverse==true&&abs(dist) < 0.5 && abs(targetangle - targetyaw) > 0.1 && (_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) > 5 && (_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 40)
-								{
 
-									*cmdGear = 1;
-									if (abs(_speed) < 10)
-									{
-										*cmdGear = 1;
-										*cmdAcc = 0.3;
-										*cmdBrake = 0;
-									}
-									else
-									{
-										*cmdBrake = 0.3;
-									}
-								}
-								else { reverse = false; }
-				*/
-				if (abs(_speed) < 20&&reverse)//&&reverse==false)
+				if (abs(_speed) < 20 && reverse)//起始时加速倒车
 				{
 					*cmdGear = -1;
 					*cmdAcc = 1;
 					*cmdBrake = 0;
 				}
-				else
+				else//控制速度为20
 				{
 					reverse = 0;
 					if (abs(_speed)<20) {
@@ -231,7 +210,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 					targetangle = targetangle - 2 * PI;
 				if (targetangle - targetyaw < -PI)
 					targetyaw -= 2 * PI;
-				if (abs(dist) > 6)
+				if (abs(dist) > 6)//较接近时猛打方向缓步减速
 				{
 					*cmdAcc = 0;
 					*cmdGear = 1;
@@ -239,15 +218,15 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 					*cmdSteer = Sign(targetangle,targetyaw);
 				}
 
-				else {
+				else {//很接近时猛踩刹车并调整方向盘
 					*cmdAcc = 0;
 					*cmdBrake = 1 - 0.2 * constrain(0, 1, abs(_yawrate));
 					*cmdSteer = constrain(-0.15, -0.1, 0.1 * Sub(targetangle , targetyaw));
 				}
 
-				if (abs(Sub(targetyaw,targetangle)) < PI / 4.0)
+				if (abs(targetyaw - targetangle) < PI / 4.0)//角度即将纠正时踩满刹车
 					*cmdBrake = 1;
-				if (abs(_speed) < 0.1) {
+				if (abs(_speed) < 0.1) {//切换为倒车状态
 					flagt = 2;
 				}
 
@@ -256,7 +235,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 			else if ((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 8000 && dist < 80)
 			{ //提前将车控制在道路左侧
 				*cmdSteer = (_yaw - atan2(_midline[10][0] - 1.0 * _width / 3.0, _midline[10][1])) / 3.14;
-				expectedSpeed = 80 + 4 * constrain(-10,0,_midline[0][0]);
+				expectedSpeed = 80+4*constrain(-10,0,_midline[0][0]);
 				curSpeedErr = expectedSpeed - _speed;
 				serr = curSpeedErr - tmps;// add a defferential term
 				speedErrSum = 0.1 * speedErrSum + curSpeedErr; // weaken the influence of integral term
@@ -366,13 +345,6 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 	}
 
 
-
-	printf("acc:%f\tSteer:%.2f\tbrake:%f\t", *cmdAcc, *cmdSteer, *cmdBrake);
-	printf("dist:%.2f\td:%.2f\t", sgn * dist, d);
-	printf("flag:%d\t", flag);
-	printf("Xerr:%.2f\tYerr:%.2f\tangleerr:%.2f\t", _carX-_lotX,_carY-_lotY,targetangle-targetyaw);
-	printf("\n");
-
 }
 
 
@@ -396,6 +368,6 @@ int Sign(double x, double y)
 double Sub(double x, double y)
 {
 	if (x - y > PI) return x - y - 2 * PI;
-	if (x - y < -PI) return x - y + 2 * PI;
+	if (x - y < -PI)return x - y + 2 * PI;
 	return x - y;
 }
